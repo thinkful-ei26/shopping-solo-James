@@ -3,11 +3,12 @@
 
 const STORE = {
     items: [
-        {name: "apples", checked: false},
-        {name: "oranges", checked: false},
-        {name: "milk", checked: true},
-        {name: "bread", checked: false}
+        {name: "apples", checked: false, iindex: 0},
+        {name: "oranges", checked: false, iindex: 1},
+        {name: "milk", checked: true, iindex: 2},
+        {name: "bread", checked: false, iindex: 3}
     ],
+    hideCompleted: false,
 };
 
 // returns a single LI element as a string
@@ -28,18 +29,29 @@ function generateItemElement(item, itemIndex) {
 
 //maps thru the store and returns a string of all the LI's
 function generateShoppingItemsString(shoppingList) {
-  //console.log("Generating shopping list element");
-  const liitems = shoppingList.map((item, index) => generateItemElement(item, index));
-  return liitems.join("");
+    if(!STORE.hideCompleted){
+        let unfilteredItems = [ ...shoppingList ].map((element, index) => generateItemElement(element, index));
+        return unfilteredItems.join("");
+    }
+    if(STORE.hideCompleted) {
+        let unfilteredItems = [];
+        shoppingList.map((element, index) => {
+            if(!element.checked){
+            unfilteredItems.push(generateItemElement(element, index));
+            }
+        });
+        return unfilteredItems.join('');
+        }
+    
 }
 
 //renders the store to the DOM
 function renderShoppingList() {
- // console.log('`renderShoppingList` ran');
-  //make a string from the store
-  const shoppingListItemsString = generateShoppingItemsString(STORE.items);
+ //make a string from the store that has all items if hideCompleted is false
+ // and only filtered items if true.
+    const lisToRender = generateShoppingItemsString(STORE.items);
   // insert built HTML-string into the DOM
-  $('.shopping-list').html(shoppingListItemsString);
+  $('.shopping-list').html(lisToRender);
 }
 
 function handleNewItemSubmit() {
@@ -73,16 +85,16 @@ function handleItemCheckClicked() {
  
 }
 
-function toggleCheckedForListItem(itemIndex) {
+function toggleCheckedForListItem(itemAtIndex) {
     //console.log("Toggling checked property for item at index " + itemIndex);
-    STORE.items[itemIndex].checked = !STORE.items[itemIndex].checked;
+    STORE.items[itemAtIndex].checked = !STORE.items[itemAtIndex].checked;
+   
   }
 
 // finds the li and reads it's index attribute, returns it as a number
 function getItemIndexFromElement(item) {
-    const itemIndexString = $(item)
-      .closest('.js-item-index-element')
-      .attr('data-item-index');
+    const itemIndexString = $(item).closest('.js-item-index-element').data('item-index');
+    console.log(itemIndexString);
     return parseInt(itemIndexString, 10);
   }
 
@@ -102,7 +114,19 @@ function deleteListItem(StoreIndex){
     //console.log("deleteing items function line 100 here");
     //delete STORE[StoreIndex];
     STORE.items.splice(StoreIndex, 1);
+    
+}
+
+function toggleCheckBoxFilter(){
+    //this function sets the store hide/show completed boolean to !whatever it was
+    STORE.hideCompleted = !STORE.hideCompleted;
+    //console.log("showing items:", STORE.hideCompleted);
     renderShoppingList();
+}
+
+function handleDisplayCheckedBox(){
+    //this function is the event listener for the checkbox input
+    $('#display-checked').on('click', toggleCheckBoxFilter);
 }
 // this function will be our callback when the page loads. it's responsible for
 // initially rendering the shopping list, and activating our individual functions
@@ -113,7 +137,7 @@ function handleShoppingList() {
   handleNewItemSubmit();
   handleItemCheckClicked();
   handleDeleteItemClicked();
-
+  handleDisplayCheckedBox();
 }
 
 // when the page loads, call `handleShoppingList`
