@@ -3,12 +3,13 @@
 
 const STORE = {
     items: [
-        {name: "apples", checked: false, iindex: 0},
-        {name: "oranges", checked: false, iindex: 1},
-        {name: "milk", checked: true, iindex: 2},
-        {name: "bread", checked: false, iindex: 3}
+        {name: "apples", checked: false, found: false},
+        {name: "oranges", checked: false, found: false},
+        {name: "milk", checked: true, found: false},
+        {name: "bread", checked: false, found: false}
     ],
     hideCompleted: false,
+    lookingForName: false,
 };
 
 // returns a single LI element as a string
@@ -27,12 +28,43 @@ function generateItemElement(item, itemIndex) {
     </li>`;
 }
 
-//maps thru the store and returns a string of all the LI's
 function generateShoppingItemsString(shoppingList) {
+//maps thru the store and returns a string of all the Li's
+    if(STORE.lookingForName && !STORE.hideCompleted){
+      let searchingFor = [];
+        shoppingList.map((element, index) => {
+            if(element.found){
+              searchingFor.push(generateItemElement(element, index));
+            element.found = false;
+            }
+        });
+        STORE.lookingForName = false;
+        //console.log(searchingFor);works
+        return searchingFor.join('');
+    }
+    if(STORE.lookingForName){
+      //here we are searching but need to hide checked?
+      let searchingFor = [];
+        shoppingList.map((element, index) => {
+            if(element.found){
+                if(!element.checked){
+                  searchingFor.push(generateItemElement(element, index));
+                  element.found = false;
+                }
+              element.found = false;
+            }
+        });
+        STORE.lookingForName = false;
+        //console.log(searchingFor);works
+        return searchingFor.join('');
+    }
+
+
     if(!STORE.hideCompleted){
         let unfilteredItems = [ ...shoppingList ].map((element, index) => generateItemElement(element, index));
         return unfilteredItems.join("");
     }
+//returns string of unchecked Li's
     if(STORE.hideCompleted) {
         let unfilteredItems = [];
         shoppingList.map((element, index) => {
@@ -47,8 +79,7 @@ function generateShoppingItemsString(shoppingList) {
 
 //renders the store to the DOM
 function renderShoppingList() {
- //make a string from the store that has all items if hideCompleted is false
- // and only filtered items if true.
+ 
     const lisToRender = generateShoppingItemsString(STORE.items);
   // insert built HTML-string into the DOM
   $('.shopping-list').html(lisToRender);
@@ -69,7 +100,7 @@ function handleNewItemSubmit() {
 
 function addItemToShoppingList(itemName){
    // console.log(`Adding "${itemName}" to shopping list`);
-  STORE.items.push({name: itemName, checked: false});
+  STORE.items.push({name: itemName, checked: false, found: false});
 }
 
 
@@ -94,7 +125,7 @@ function toggleCheckedForListItem(itemAtIndex) {
 // finds the li and reads it's index attribute, returns it as a number
 function getItemIndexFromElement(item) {
     const itemIndexString = $(item).closest('.js-item-index-element').data('item-index');
-    console.log(itemIndexString);
+    //console.log(itemIndexString);
     return parseInt(itemIndexString, 10);
   }
 
@@ -111,7 +142,7 @@ function handleDeleteItemClicked() {
 
 function deleteListItem(StoreIndex){
     //this function has passed in the itemIndex to remove from the store
-    //console.log("deleteing items function line 100 here");
+    
     //delete STORE[StoreIndex];
     STORE.items.splice(StoreIndex, 1);
     
@@ -128,6 +159,26 @@ function handleDisplayCheckedBox(){
     //this function is the event listener for the checkbox input
     $('#display-checked').on('click', toggleCheckBoxFilter);
 }
+
+function handleSearchByName(){
+  //event listener for user input on search Box
+  $('#searchForm').submit(function(event) {
+    //console.log("line 147");works
+    event.preventDefault();
+    const searchFor = $('#searchByName').val();
+    $('#searchByName').val('');
+  doTheSearching(searchFor);
+  renderShoppingList();
+  });
+}
+
+function doTheSearching(theirName){
+
+  STORE.lookingForName = true;
+  STORE.items.forEach(element => (element.name === theirName)? element.found = true: element.found = false);
+  // console.log(theirName, STORE.lookingForName);works
+  
+}
 // this function will be our callback when the page loads. it's responsible for
 // initially rendering the shopping list, and activating our individual functions
 // that handle new item submission and user clicks on the "check" and "delete" buttons
@@ -138,6 +189,7 @@ function handleShoppingList() {
   handleItemCheckClicked();
   handleDeleteItemClicked();
   handleDisplayCheckedBox();
+  handleSearchByName();
 }
 
 // when the page loads, call `handleShoppingList`
