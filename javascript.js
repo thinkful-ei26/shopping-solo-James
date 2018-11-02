@@ -87,10 +87,20 @@ function getItemIndexFromElement(item) {
 function handleDeleteItemClicked() {
   // this function will be responsible for when users want to delete a shopping list
   // item
-  
+  $('.shopping-list').on('click', `.js-item-delete`, event => {
+    const itemIndex = getItemIndexFromElement(event.currentTarget);
+    deleteListItem(itemIndex);
+    renderShoppingList();
   console.log('`handleDeleteItemClicked` ran');
+  });  
 }
 
+function deleteListItem(StoreIndex){
+    //this function has passed in the itemIndex to remove from the store
+    console.log("deleteing items function line 100 here");
+    delete STORE[StoreIndex];
+    renderShoppingList();
+}
 // this function will be our callback when the page loads. it's responsible for
 // initially rendering the shopping list, and activating our individual functions
 // that handle new item submission and user clicks on the "check" and "delete" buttons
