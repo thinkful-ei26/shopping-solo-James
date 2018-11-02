@@ -1,12 +1,14 @@
 'use strict';
 /*eslint-env jquery */
 
-const STORE = [
-  {name: "apples", checked: false},
-  {name: "oranges", checked: false},
-  {name: "milk", checked: true},
-  {name: "bread", checked: false}
-];
+const STORE = {
+    items: [
+        {name: "apples", checked: false},
+        {name: "oranges", checked: false},
+        {name: "milk", checked: true},
+        {name: "bread", checked: false}
+    ],
+};
 
 // returns a single LI element as a string
 function generateItemElement(item, itemIndex) {
@@ -26,16 +28,16 @@ function generateItemElement(item, itemIndex) {
 
 //maps thru the store and returns a string of all the LI's
 function generateShoppingItemsString(shoppingList) {
-  console.log("Generating shopping list element");
-  const items = shoppingList.map((item, index) => generateItemElement(item, index));
-  return items.join("");
+  //console.log("Generating shopping list element");
+  const liitems = shoppingList.map((item, index) => generateItemElement(item, index));
+  return liitems.join("");
 }
 
 //renders the store to the DOM
 function renderShoppingList() {
-  console.log('`renderShoppingList` ran');
+ // console.log('`renderShoppingList` ran');
   //make a string from the store
-  const shoppingListItemsString = generateShoppingItemsString(STORE);
+  const shoppingListItemsString = generateShoppingItemsString(STORE.items);
   // insert built HTML-string into the DOM
   $('.shopping-list').html(shoppingListItemsString);
 }
@@ -48,14 +50,14 @@ function handleNewItemSubmit() {
     //newItemName is the text input from the input box
     $('.js-shopping-list-entry').val('');
     addItemToShoppingList(newItemName);
-  console.log('`handleNewItemSubmit` ran');
+  //console.log('`handleNewItemSubmit` ran');
   renderShoppingList();
 });
 }
 
 function addItemToShoppingList(itemName){
-    console.log(`Adding "${itemName}" to shopping list`);
-  STORE.push({name: itemName, checked: false});
+   // console.log(`Adding "${itemName}" to shopping list`);
+  STORE.items.push({name: itemName, checked: false});
 }
 
 
@@ -66,14 +68,14 @@ function handleItemCheckClicked() {
     const itemIndex = getItemIndexFromElement(event.currentTarget);
     toggleCheckedForListItem(itemIndex);
     renderShoppingList();
-    console.log('`handleItemCheckClicked` ran');
+    //console.log('`handleItemCheckClicked` ran');
   });
  
 }
 
 function toggleCheckedForListItem(itemIndex) {
-    console.log("Toggling checked property for item at index " + itemIndex);
-    STORE[itemIndex].checked = !STORE[itemIndex].checked;
+    //console.log("Toggling checked property for item at index " + itemIndex);
+    STORE.items[itemIndex].checked = !STORE.items[itemIndex].checked;
   }
 
 // finds the li and reads it's index attribute, returns it as a number
@@ -91,14 +93,15 @@ function handleDeleteItemClicked() {
     const itemIndex = getItemIndexFromElement(event.currentTarget);
     deleteListItem(itemIndex);
     renderShoppingList();
-  console.log('`handleDeleteItemClicked` ran');
+  //console.log('`handleDeleteItemClicked` ran');
   });  
 }
 
 function deleteListItem(StoreIndex){
     //this function has passed in the itemIndex to remove from the store
-    console.log("deleteing items function line 100 here");
-    delete STORE[StoreIndex];
+    //console.log("deleteing items function line 100 here");
+    //delete STORE[StoreIndex];
+    STORE.items.splice(StoreIndex, 1);
     renderShoppingList();
 }
 // this function will be our callback when the page loads. it's responsible for
