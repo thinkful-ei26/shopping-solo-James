@@ -3,10 +3,10 @@
 
 const STORE = {
     items: [
-        {name: "apples", checked: false, found: false, beingEdited: false},
-        {name: "oranges", checked: false, found: false, beingEdited: false},
-        {name: "milk", checked: true, found: false, beingEdited: false},
-        {name: "bread", checked: false, found: false, beingEdited: false}
+        {name: "apples", checked: false, found: false},
+        {name: "oranges", checked: false, found: false},
+        {name: "milk", checked: true, found: false},
+        {name: "bread", checked: false, found: false}
     ],
     hideCompleted: false,
     lookingForName: false,
@@ -27,6 +27,10 @@ function generateItemElement(item, itemIndex) {
         <button class="shopping-item-edit js-item-edit">
             <span class="button-label">edit</span>
         </button>
+        <form class="EditInput editor hidden">
+        <label >Change an item</label>
+        <input type="text" name="EditName" class="EditName" placeholder="Rename Here..." />
+        </form>
       </div>
     </li>`;
 }
@@ -82,8 +86,7 @@ function generateShoppingItemsString(shoppingList) {
 
 //renders the store to the DOM
 function renderShoppingList() {
- 
-    const lisToRender = generateShoppingItemsString(STORE.items);
+   const lisToRender = generateShoppingItemsString(STORE.items);
   // insert built HTML-string into the DOM
   $('.shopping-list').html(lisToRender);
 }
@@ -103,7 +106,7 @@ function handleNewItemSubmit() {
 
 function addItemToShoppingList(itemName){
    // console.log(`Adding "${itemName}" to shopping list`);
-  STORE.items.push({name: itemName, checked: false, found: false, beingEdited: false});
+  STORE.items.push({name: itemName, checked: false, found: false});
 }
 
 
@@ -145,7 +148,6 @@ function handleDeleteItemClicked() {
 
 function deleteListItem(StoreIndex){
     //this function has passed in the itemIndex to remove from the store
-    
     //delete STORE[StoreIndex];
     STORE.items.splice(StoreIndex, 1);
     
@@ -178,45 +180,28 @@ function handleSearchByName(){
 function doTheSearching(theirName){
   STORE.lookingForName = true;
   STORE.items.forEach(element => (element.name === theirName)? element.found = true: element.found = false);
-  // console.log(theirName, STORE.lookingForName);works
 }
 
 function handleEditButton(){
   $('.shopping-list').on('click', `.js-item-edit`, event => {
     //handles the clicks of the edit button. passes which button was clicked into function.
-    $('.editor').removeClass('hidden');
-    
-    //find the store object, change its flag to true
+    $(event.target).closest('.js-item-index-element').find('.editor').removeClass('hidden');
     const itemIndexStr = $(event.target).closest('.js-item-index-element').data('item-index');
-    let itemIndexNumber = parseInt(itemIndexStr, 10);
-    STORE.items[itemIndexNumber].beingEdited = true;
-    handleRenameSubmission();
-    
-    
+    const itemIndexNumber = parseInt(itemIndexStr, 10);
+    handleRenameSubmission(itemIndexNumber);
   });  
 }
 
-function handleRenameSubmission(){
-  $('#EditInput').submit(function(event){
+function handleRenameSubmission(nummyIndex){
+  $('.EditInput').on('submit', nummyIndex, function(event){
     event.preventDefault();
-    // grab new input value.
-    const renamedItemName = $('#EditName').val();
-    //console.log(STORE.items);works
-    //console.log(renamedItemName);also works
-    $('#EditName').val('');
-    //cycle thru find, being edited and change that val to the new val
-    STORE.items.forEach(element => { 
-     // console.log(element.beingEdited);
-     // console.log(element.name);
-      if(element.beingEdited){
-        element.name = renamedItemName.toString();
-        element.beingEdited = false;
-        $('.editor').addClass('hidden');
-        renderShoppingList();
-      }
-    });
-  });
-  
+    const inputBox = $(event.target).closest('.js-item-index-element').find('.EditName').val().toString();
+    $(event.target).closest('.js-item-index-element').find('.EditName').val('');
+    STORE.items[nummyIndex].name = inputBox;
+    $(event.target).closest('.js-item-index-element').find('.editor').addClass('hidden');
+    renderShoppingList();
+     });
+   
 }
 
 // this function will be our callback when the page loads. it's responsible for
@@ -231,7 +216,7 @@ function handleShoppingList() {
   handleDisplayCheckedBox();
   handleSearchByName();
   handleEditButton();
-  handleRenameSubmission();
+  
 }
 
 // when the page loads, call `handleShoppingList`
